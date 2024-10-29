@@ -8,7 +8,7 @@ export interface AppConfig {
   env: {
     PORT: number;
     NODE_ENV: string;
-    DB_URL: string;
+    DATABASE_URL: string;
   };
 }
 

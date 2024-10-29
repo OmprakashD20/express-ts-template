@@ -10,7 +10,7 @@ const EnvSchema = Type.Object({
     Type.Literal("production"),
     Type.Literal("staging"),
   ]),
-  DB_URL: Type.String({ format: "uri" }),
+  DATABASE_URL: Type.String({ format: "uri" }),
 });
 
 type EnvSchemaType = Static<typeof EnvSchema>;
@@ -19,7 +19,7 @@ export default function validateEnv(): EnvSchemaType {
   const env: EnvSchemaType = {
     PORT: process.env.PORT ? Number(process.env.PORT) : 8000,
     NODE_ENV: process.env.NODE_ENV as EnvSchemaType["NODE_ENV"],
-    DB_URL: process.env.DB_URL!,
+    DATABASE_URL: process.env.DATABASE_URL!,
   };
 
   const validator = TypeCompiler.Compile(EnvSchema);
