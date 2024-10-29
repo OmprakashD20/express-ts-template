@@ -7,7 +7,6 @@ import "./path";
 
 import config from "@/config";
 import ErrorHandler from "@/middlewares/errorHandler";
-import AsyncHandler from "@/utils/asyncHandler";
 import { NotFoundError } from "@/utils/errors";
 
 const app = express();
