@@ -1,8 +1,7 @@
 import "dotenv/config";
 
 import { Static, Type } from "@sinclair/typebox";
-
-import ValidatorFactory from "@/validations";
+import { TypeCompiler } from "@sinclair/typebox/compiler";
 
 const EnvSchema = Type.Object({
   PORT: Type.Number(),
@@ -11,7 +10,7 @@ const EnvSchema = Type.Object({
     Type.Literal("production"),
     Type.Literal("staging"),
   ]),
-  DB_URL: Type.String(),
+  DB_URL: Type.String({ format: "uri" }),
 });
 
 type EnvSchemaType = Static<typeof EnvSchema>;
@@ -23,9 +22,21 @@ export default function validateEnv(): EnvSchemaType {
     DB_URL: process.env.DB_URL!,
   };
 
-  const { validate } = ValidatorFactory<EnvSchemaType>(EnvSchema);
+  const validator = TypeCompiler.Compile(EnvSchema);
 
-  const data = validate(env);
+  const isValid = validator.Check(env);
 
-  return data;
+  if (!isValid) {
+    const missingKeys = Object.keys(env).filter(
+      (key) => env[key as keyof EnvSchemaType] === undefined
+    );
+
+    if (missingKeys.length === 1) {
+      throw new Error(`Missing Env Variable: ${missingKeys[0]}`);
+    } else if (missingKeys.length > 1) {
+      throw new Error(`Missing Env Variables: ${missingKeys.join(", ")}`);
+    }
+  }
+
+  return env;
 }

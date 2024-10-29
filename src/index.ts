@@ -6,6 +6,9 @@ import helmet from "helmet";
 import "./path";
 
 import config from "@/config";
+import ErrorHandler from "@/middlewares/errorHandler";
+import AsyncHandler from "@/utils/asyncHandler";
+import { NotFoundError } from "@/utils/errors";
 
 const app = express();
 
@@ -27,8 +30,10 @@ app.get("/", (_: Request, res: Response) => {
 
 //404 handler
 app.all("*", (_: Request, res: Response) => {
-  res.status(404).json({ message: "Route not found" });
+  throw new NotFoundError("Route not found");
 });
+
+app.use(ErrorHandler);
 
 app.listen(PORT, () => {
   console.log(

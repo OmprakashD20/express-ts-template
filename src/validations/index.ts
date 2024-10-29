@@ -2,6 +2,7 @@ import { TObject } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 
 import { ValidatorFactoryReturn } from "@/types";
+import { ValidationError } from "@/utils/errors";
 
 export default function ValidatorFactory<T>(
   schema: TObject
@@ -14,19 +15,15 @@ export default function ValidatorFactory<T>(
       return data;
     }
 
-    const errors = Array.from(C.Errors(data)).map(({ path, message }) => ({
-      path,
-      message,
-    }));
+    const error = Array.from(C.Errors(data))[0];
 
-    const errorMessages = errors.map((error) => {
-      const path = error.path.toString().slice(1);
-      const expected = schema.properties[path]?.type || "unknown";
-      const received = (data as Record<string, any>)[path];
-      return `\nPath: "${path}", Expected: "${expected}", Received: "${received}"`;
-    });
+    const path = error.path.toString().slice(1);
+    const expected = schema.properties[path]?.type || "unknown";
+    const received = (data as Record<string, any>)[path];
 
-    throw new Error(`\nValidation Errors: ${errorMessages}`);
+    throw new ValidationError(
+      `Path: "${path}", Expected: "${expected}", Received: "${received}"`
+    );
   }
 
   return { schema, validate };
