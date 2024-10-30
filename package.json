@@ -6,7 +6,9 @@
     "build": "npx tsc",
     "dev": "ts-node-dev -r dotenv/config src/index.ts dotenv_config_path=.env.development",
     "start:staging": "ts-node -r dotenv/config build/index.js dotenv_config_path=.env.staging",
-    "start": "ts-node -r dotenv/config build/index.js dotenv_config_path=.env.production"
+    "start": "ts-node -r dotenv/config build/index.js dotenv_config_path=.env.production",
+    "db:migrate:dev": "ts-node scripts/database.ts development",
+    "db:migrate:prod": "ts-node scripts/database.ts production"
   },
   "author": "Omprakash D",
   "license": "ISC",
@@ -19,17 +21,22 @@
     "@types/http-status": "^0.2.30",
     "@types/module-alias": "^2.0.4",
     "@types/node": "^22.8.2",
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.26.2",
     "ts-node-dev": "^2.0.0",
+    "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.33.17",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.35.3",
     "express": "^4.21.1",
     "helmet": "^8.0.0",
     "http-status": "^2.0.0",
     "module-alias": "^2.2.3",
-    "oslo": "^1.2.1"
+    "oslo": "^1.2.1",
+    "pg": "^8.13.1"
   }
 }
