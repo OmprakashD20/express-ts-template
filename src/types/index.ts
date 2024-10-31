@@ -1,3 +1,4 @@
+import { NextFunction, Request, Response } from "express";
 import { TObject } from "@sinclair/typebox";
 import type {
   BuildQueryResult,
@@ -42,7 +43,7 @@ export interface AppConfig {
 
 export interface ValidatorFactoryReturn<T> {
   schema: TObject;
-  validate: (data: T) => T;
+  validate: (req: Request, res: Response, next: NextFunction) => void;
 }
 
 export interface AsyncHandlerReturn<T> {

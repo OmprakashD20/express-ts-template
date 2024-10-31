@@ -1,5 +1,8 @@
+import { NextFunction, query, Request, Response } from "express";
+
 import { TObject } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
+import { StandardValidator } from "typebox-validators/standard";
 
 import { ValidatorFactoryReturn } from "@/types";
 import { ValidationError } from "@/utils/errors";
@@ -9,22 +12,25 @@ export default function ValidatorFactory<T>(
 ): ValidatorFactoryReturn<T> {
   const C = TypeCompiler.Compile(schema);
 
-  function validate(data: T): T {
+  const validator = new StandardValidator(schema);
+
+  function validate(req: Request, _res: Response, next: NextFunction): void {
+    const data = { body: req.body, query: req.query, params: req.params };
     const isValid = C.Check(data);
     if (isValid) {
-      return data;
+      return next();
     }
 
-    const error = Array.from(C.Errors(data))[0];
+    const error = validator.testReturningFirstError(data)!;
+    const path = error.path.split("/").reverse()[0];
+    const errorMsg = `${path.charAt(0).toUpperCase() + path.slice(1)}: ${
+      error.message
+    }`;
 
-    const path = error.path.toString().slice(1);
-    const expected = schema.properties[path]?.type || "unknown";
-    const received = (data as Record<string, any>)[path];
-
-    throw new ValidationError(
-      `Path: "${path}", Expected: "${expected}", Received: "${received}"`
-    );
+    throw new ValidationError(errorMsg);
   }
 
   return { schema, validate };
 }
+
+export * from "./project";

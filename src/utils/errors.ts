@@ -33,7 +33,7 @@ export class ClientError extends HTTPError {
 }
 
 export class ServerError extends HTTPError {
-  constructor(message: string = "Please try again later") {
+  constructor(message: string = "Server Error, Please try again later") {
     super(HttpStatus.INTERNAL_SERVER_ERROR, message, "INTERNAL SERVER ERROR");
   }
 }
