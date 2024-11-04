@@ -1,36 +1,25 @@
-import { NextFunction, query, Request, Response } from "express";
-
-import { TObject } from "@sinclair/typebox";
-import { TypeCompiler } from "@sinclair/typebox/compiler";
-import { StandardValidator } from "typebox-validators/standard";
+import { NextFunction, Request, Response } from "express";
+import { ZodError, ZodSchema } from "zod";
 
 import { ValidatorFactoryReturn } from "@/types";
 import { ValidationError } from "@/utils/errors";
 
 export default function ValidatorFactory<T>(
-  schema: TObject
+  schema: ZodSchema<T>
 ): ValidatorFactoryReturn<T> {
-  const C = TypeCompiler.Compile(schema);
-
-  const validator = new StandardValidator(schema);
-
-  function validate(req: Request, _res: Response, next: NextFunction): void {
+  function validator(req: Request, _res: Response, next: NextFunction): void {
     const data = { body: req.body, query: req.query, params: req.params };
-    const isValid = C.Check(data);
-    if (isValid) {
+
+    try {
+      schema.parse(data);
       return next();
+    } catch (error: any) {
+      if (error instanceof ZodError) {
+        const issue = error.errors[0];
+        throw new ValidationError(issue.message);
+      }
     }
-
-    const error = validator.testReturningFirstError(data)!;
-    const path = error.path.split("/").reverse()[0];
-    const errorMsg = `${path.charAt(0).toUpperCase() + path.slice(1)}: ${
-      error.message
-    }`;
-
-    throw new ValidationError(errorMsg);
   }
 
-  return { schema, validate };
+  return { validator };
 }
-
-export * from "./project";

@@ -1,19 +1,14 @@
 import "dotenv/config";
 
-import { Static, Type } from "@sinclair/typebox";
-import { TypeCompiler } from "@sinclair/typebox/compiler";
+import { z } from "zod";
 
-const EnvSchema = Type.Object({
-  PORT: Type.Number(),
-  NODE_ENV: Type.Union([
-    Type.Literal("development"),
-    Type.Literal("production"),
-    Type.Literal("staging"),
-  ]),
-  DATABASE_URL: Type.String({ format: "uri" }),
+const EnvSchema = z.object({
+  PORT: z.number(),
+  NODE_ENV: z.enum(["development", "production", "staging"]),
+  DATABASE_URL: z.string().url(),
 });
 
-type EnvSchemaType = Static<typeof EnvSchema>;
+type EnvSchemaType = z.infer<typeof EnvSchema>;
 
 export default function validateEnv(): EnvSchemaType {
   const env: EnvSchemaType = {
@@ -22,20 +17,21 @@ export default function validateEnv(): EnvSchemaType {
     DATABASE_URL: process.env.DATABASE_URL!,
   };
 
-  const validator = TypeCompiler.Compile(EnvSchema);
+  const result = EnvSchema.safeParse(env);
 
-  const isValid = validator.Check(env);
+  if (!result.success) {
+    const missingKeys = result.error.errors
+      .filter(
+        (err) => err.code === "invalid_type" && err.received === "undefined"
+      )
+      .map((err) => err.path.join("."));
 
-  if (!isValid) {
-    const missingKeys = Object.keys(env).filter(
-      (key) => env[key as keyof EnvSchemaType] === undefined
-    );
+    const errorMessage =
+      missingKeys.length === 1
+        ? `Missing Env Variable: ${missingKeys[0]}`
+        : `Missing Env Variables: ${missingKeys.join(", ")}`;
 
-    if (missingKeys.length === 1) {
-      throw new Error(`Missing Env Variable: ${missingKeys[0]}`);
-    } else if (missingKeys.length > 1) {
-      throw new Error(`Missing Env Variables: ${missingKeys.join(", ")}`);
-    }
+    throw new Error(errorMessage);
   }
 
   return env;
