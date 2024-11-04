@@ -17,13 +17,6 @@ export class HTTPError extends Error {
       Error.captureStackTrace(this, this.constructor);
     }
   }
-
-  toJSON() {
-    return {
-      success: this.success,
-      [this.error]: this.message,
-    };
-  }
 }
 
 export class ClientError extends HTTPError {

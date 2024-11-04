@@ -12,5 +12,7 @@ export default function ErrorHandler(
 
   //todo: log error
 
-  res.status(statusCode).json(err.toJSON());
+  res.status(statusCode).json({
+    [err.error]: err.message,
+  });
 }
