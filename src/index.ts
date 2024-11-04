@@ -7,6 +7,7 @@ import "./path";
 
 import config from "@/config";
 import ErrorHandler from "@/middlewares/errorHandler";
+import AsyncHandler from "@/utils/asyncHandler";
 import { NotFoundError } from "@/utils/errors";
 
 const app = express();
@@ -23,14 +24,20 @@ app.use(
 app.disable("x-powered-by");
 app.use(express.json());
 
-app.get("/", (_: Request, res: Response) => {
-  res.status(200).json({ message: "Starter Template" });
-});
+app.get(
+  "/",
+  AsyncHandler(async (_: Request, __: Response) => {
+    return { message: "Starter Template", statusCode: 200 };
+  })
+);
 
 //404 handler
-app.all("*", (_: Request, res: Response) => {
-  throw new NotFoundError("Route not found");
-});
+app.all(
+  "*",
+  AsyncHandler((_: Request, __: Response) => {
+    throw new NotFoundError("Route not found");
+  })
+);
 
 app.use(ErrorHandler);
 
