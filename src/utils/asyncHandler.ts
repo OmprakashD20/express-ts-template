@@ -28,7 +28,7 @@ export default function AsyncHandler<
       res.status(statusCode).json({ success: true, data });
     } catch (error: any) {
       if (error instanceof HTTPError) next(error);
-      else throw new ServerError();
+      else next(new ServerError());
     }
   };
 }
