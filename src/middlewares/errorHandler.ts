@@ -10,8 +10,6 @@ export default function ErrorHandler(
 ) {
   const statusCode = err.status;
 
-  //todo: log error
-
   res.status(statusCode).json({
     [err.error]: err.message,
   });

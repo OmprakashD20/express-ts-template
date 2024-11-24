@@ -4,6 +4,7 @@ import { ParsedQs } from "qs";
 
 import { AsyncHandlerReturn } from "@/types";
 import { HTTPError, ServerError } from "@/utils/errors";
+import { ConsoleLogger } from "@/utils/logger";
 
 export default function AsyncHandler<
   T,
@@ -27,6 +28,7 @@ export default function AsyncHandler<
 
       res.status(statusCode).json({ success: true, data });
     } catch (error: any) {
+      ConsoleLogger.error(error);
       if (error instanceof HTTPError) next(error);
       else next(new ServerError());
     }

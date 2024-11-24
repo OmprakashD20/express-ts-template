@@ -38,6 +38,12 @@ export interface AppConfig {
     NODE_ENV: string;
     DATABASE_URL: string;
   };
+  logs: {
+    datePattern: string;
+    maxSize: string;
+    maxFiles: string;
+    zippedArchive: boolean;
+  };
 }
 
 export interface ValidatorFactoryReturn<T> {

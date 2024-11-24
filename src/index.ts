@@ -7,8 +7,10 @@ import "./path";
 
 import config from "@/config";
 import ErrorHandler from "@/middlewares/errorHandler";
+import ResponseInterceptor from "@/middlewares/responseInterceptor";
 import AsyncHandler from "@/utils/asyncHandler";
 import { NotFoundError } from "@/utils/errors";
+import { ConsoleLogger } from "@/utils/logger";
 
 const app = express();
 
@@ -23,6 +25,8 @@ app.use(
 );
 app.disable("x-powered-by");
 app.use(express.json());
+
+app.use(ResponseInterceptor);
 
 app.get(
   "/",
@@ -42,7 +46,7 @@ app.all(
 app.use(ErrorHandler);
 
 app.listen(PORT, () => {
-  console.log(
+  ConsoleLogger.info(
     `✅ Server listing on port ${PORT}, running in ${config.env.NODE_ENV} env`
   );
 });
