@@ -7,8 +7,8 @@
     "dev": "ts-node-dev -r dotenv/config src/index.ts dotenv_config_path=.env.development",
     "start:staging": "ts-node -r dotenv/config build/src/index.js dotenv_config_path=.env.staging",
     "start": "ts-node -r dotenv/config build/src/index.js dotenv_config_path=.env.production",
-    "db:migrate:dev": "ts-node scripts/database.ts development",
-    "db:migrate:prod": "ts-node scripts/database.ts production"
+    "db:dev": "ts-node scripts/database.ts development",
+    "db:prod": "ts-node scripts/database.ts production"
   },
   "author": "Omprakash D",
   "license": "ISC",
