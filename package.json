@@ -5,8 +5,8 @@
   "scripts": {
     "build": "npx tsc",
     "dev": "ts-node-dev -r dotenv/config src/index.ts dotenv_config_path=.env.development",
-    "start:staging": "ts-node -r dotenv/config build/index.js dotenv_config_path=.env.staging",
-    "start": "ts-node -r dotenv/config build/index.js dotenv_config_path=.env.production",
+    "start:staging": "ts-node -r dotenv/config build/src/index.js dotenv_config_path=.env.staging",
+    "start": "ts-node -r dotenv/config build/src/index.js dotenv_config_path=.env.production",
     "db:migrate:dev": "ts-node scripts/database.ts development",
     "db:migrate:prod": "ts-node scripts/database.ts production"
   },
