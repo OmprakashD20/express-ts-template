@@ -4,8 +4,9 @@ import { randomBytes } from "crypto";
 import DailyRotateFile from "winston-daily-rotate-file";
 
 import config from "@/config";
+import { GetErrorClass } from "@/utils/errors";
 
-const { combine, timestamp, json, printf, label, colorize } = winston.format;
+const { combine, timestamp, json, printf, colorize } = winston.format;
 const timestampFormat = "MMM-DD-YYYY HH:mm:ss";
 
 enum SensitiveKeys {
@@ -23,17 +24,16 @@ export default function Logger() {
     format: combine(
       timestamp({ format: timestampFormat }),
       json(),
-      printf(({ timestamp, level, message, ...data }) => {
-        const response = {
+      printf(({ timestamp, level, message }) => {
+        const logEntry = {
           level,
           logId: generateLogId(),
           timestamp,
           environment: config.env.NODE_ENV,
-          message,
-          data,
+          logData: message,
         };
 
-        return JSON.stringify(response, null, 2);
+        return JSON.stringify(logEntry, null, 2);
       })
     ),
     transports: [
@@ -53,11 +53,10 @@ export default function Logger() {
 
 export const ConsoleLogger = winston.createLogger({
   format: combine(
-    label({ label: config.env.NODE_ENV }),
+    colorize(),
     timestamp({ format: timestampFormat }),
-    colorize({ level: false }),
     printf(
-      ({ message, label, timestamp }) => `[${timestamp}] (${label}): ${message}`
+      ({ timestamp, level, message }) => `[${timestamp}] ${level}: ${message}`
     )
   ),
   transports: [new winston.transports.Console()],
@@ -68,18 +67,32 @@ export function FormatLoggerResponse(
   res: Response,
   responseBody: any
 ) {
+  const isEmpty = (obj: any) =>
+    Object.keys(obj).length === 0 && obj.constructor === Object;
+
+  const FormatField = (fieldData: any) => {
+    if (isEmpty(fieldData)) return undefined;
+    return RedactLogData(fieldData);
+  };
+
+  const isError = res.statusCode >= 400;
+  const request = {
+    url: `[${req.method}] ${req.url}`,
+    params: FormatField(req.params),
+    query: FormatField(req.query),
+    body: FormatField(req.body),
+  };
+  const response = {
+    status: `[${res.statusCode}] ${
+      isError ? GetErrorClass(res.statusCode) : "SUCCESS"
+    }`,
+    body: !isError ? RedactLogData(responseBody["data"]) : undefined,
+    error: isError ? responseBody[GetErrorClass(res.statusCode)] : undefined,
+  };
+
   return {
-    request: {
-      url: req.url,
-      method: req.method,
-      body: req.body,
-      params: req.params,
-      query: req.query,
-    },
-    response: {
-      statusCode: res.statusCode,
-      body: RedactLogData(responseBody),
-    },
+    request,
+    response,
   };
 }
 

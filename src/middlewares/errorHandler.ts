@@ -11,6 +11,7 @@ export default function ErrorHandler(
   const statusCode = err.status;
 
   res.status(statusCode).json({
+    success: err.success,
     [err.error]: err.message,
   });
 }

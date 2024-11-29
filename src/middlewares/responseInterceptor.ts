@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 
-import Logger, { FormatLoggerResponse } from "@/utils/logger";
 import config from "@/config";
+import Logger, { FormatLoggerResponse } from "@/utils/logger";
 
 export default function ResponseInterceptor(
   req: Request,
