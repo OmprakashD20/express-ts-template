@@ -55,10 +55,10 @@ export const ConsoleLogger = winston.createLogger({
 
 export function FormatErrorResponse(req: Request, error: HTTPError) {
   const isEmpty = (obj: any) =>
-    Object.keys(obj).length === 0 && obj.constructor === Object;
+    !obj || (typeof obj === "object" && Object.keys(obj).length === 0);
 
   const FormatField = (fieldData: any) => {
-    if (isEmpty(fieldData)) return undefined;
+    if (!fieldData || isEmpty(fieldData)) return undefined;
     return RedactLogData(fieldData);
   };
 
