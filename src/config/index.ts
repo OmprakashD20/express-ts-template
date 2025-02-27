@@ -11,7 +11,6 @@ const config: AppConfig = {
   logs: {
     datePattern: "DD-MM-YYYY",
     maxSize: "20m",
-    maxFiles: "14d",
     zippedArchive: true,
   },
 };

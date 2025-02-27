@@ -41,7 +41,7 @@ export interface AppConfig {
   logs: {
     datePattern: string;
     maxSize: string;
-    maxFiles: string;
+    maxFiles?: string;
     zippedArchive: boolean;
   };
 }

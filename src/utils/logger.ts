@@ -1,19 +1,15 @@
-import { Request, Response } from "express";
+import { Request } from "express";
 import winston from "winston";
 import { randomBytes } from "crypto";
 import DailyRotateFile from "winston-daily-rotate-file";
 
 import config from "@/config";
-import { GetErrorClass } from "@/utils/errors";
+import { HTTPError } from "@/utils/errors";
 
 const { combine, timestamp, json, printf, colorize } = winston.format;
 const timestampFormat = "MMM-DD-YYYY HH:mm:ss";
 
-enum SensitiveKeys {
-  Password = "password",
-}
-
-const SensitiveKeysList: string[] = Object.values(SensitiveKeys);
+const SENSITIVE_KEYS = new Set(["password"]);
 
 function generateLogId(): string {
   return randomBytes(16).toString("hex");
@@ -39,12 +35,7 @@ export default function Logger() {
     transports: [
       new DailyRotateFile({
         ...config.logs,
-        filename: "logs/combined/%DATE%.log",
-        level: "info",
-      }),
-      new DailyRotateFile({
-        ...config.logs,
-        filename: "logs/errors/%DATE%.log",
+        filename: "logs/%DATE%.log",
         level: "error",
       }),
     ],
@@ -62,11 +53,7 @@ export const ConsoleLogger = winston.createLogger({
   transports: [new winston.transports.Console()],
 });
 
-export function FormatLoggerResponse(
-  req: Request,
-  res: Response,
-  responseBody: any
-) {
+export function FormatErrorResponse(req: Request, error: HTTPError) {
   const isEmpty = (obj: any) =>
     Object.keys(obj).length === 0 && obj.constructor === Object;
 
@@ -75,7 +62,6 @@ export function FormatLoggerResponse(
     return RedactLogData(fieldData);
   };
 
-  const isError = res.statusCode >= 400;
   const request = {
     url: `[${req.method}] ${req.url}`,
     params: FormatField(req.params),
@@ -83,11 +69,8 @@ export function FormatLoggerResponse(
     body: FormatField(req.body),
   };
   const response = {
-    status: `[${res.statusCode}] ${
-      isError ? GetErrorClass(res.statusCode) : "SUCCESS"
-    }`,
-    body: !isError ? RedactLogData(responseBody["data"]) : undefined,
-    error: isError ? responseBody[GetErrorClass(res.statusCode)] : undefined,
+    status: `[${error.status}] ${error.error}`,
+    error: error.message,
   };
 
   return {
@@ -97,27 +80,14 @@ export function FormatLoggerResponse(
 }
 
 function RedactLogData(data: any): any {
-  if (!data) {
-    return data;
-  }
+  if (!data || typeof data !== "object") return data;
 
-  if (typeof data === "object") {
-    if (Array.isArray(data)) {
-      return data.map((item) => RedactLogData(item));
-    }
-
-    const redactedData = { ...data };
-
-    Object.keys(data).forEach((key) => {
-      if (SensitiveKeysList.includes(key)) {
-        redactedData[key] = "[REDACTED]";
-      } else {
-        redactedData[key] = RedactLogData(data[key]);
-      }
-    });
-
-    return redactedData;
-  }
-
-  return data;
+  return Array.isArray(data)
+    ? data.map((item) => RedactLogData(item))
+    : Object.fromEntries(
+        Object.entries(data).map(([key, value]) => [
+          key,
+          SENSITIVE_KEYS.has(key) ? "[REDACTED]" : RedactLogData(value),
+        ])
+      );
 }
