@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { HTTPError } from "@/utils/errors";
 import Logger, { FormatErrorResponse } from "@/utils/logger";
 
-export default function ErrorHandler(
+export function ErrorHandler(
   err: HTTPError,
   req: Request,
   res: Response,

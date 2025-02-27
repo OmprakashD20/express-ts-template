@@ -6,6 +6,7 @@ const EnvSchema = z.object({
   PORT: z.number(),
   NODE_ENV: z.enum(["development", "production", "staging"]),
   DATABASE_URL: z.string().url(),
+  PROD_ORIGINS: z.array(z.string()),
 });
 
 type EnvSchemaType = z.infer<typeof EnvSchema>;
@@ -15,6 +16,7 @@ export default function validateEnv(): EnvSchemaType {
     PORT: process.env.PORT ? Number(process.env.PORT) : 8000,
     NODE_ENV: process.env.NODE_ENV as EnvSchemaType["NODE_ENV"],
     DATABASE_URL: process.env.DATABASE_URL!,
+    PROD_ORIGINS: process.env.PROD_ORIGINS?.split(",")!,
   };
 
   const result = EnvSchema.safeParse(env);

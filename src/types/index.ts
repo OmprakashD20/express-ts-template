@@ -37,6 +37,7 @@ export interface AppConfig {
     PORT: number;
     NODE_ENV: string;
     DATABASE_URL: string;
+    PROD_ORIGINS: string[];
   };
   logs: {
     datePattern: string;

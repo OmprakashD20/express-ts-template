@@ -1,12 +1,12 @@
 import express, { Request, Response } from "express";
 
-import cors from "cors";
 import helmet from "helmet";
 
 import "./path";
 
 import config from "@/config";
-import ErrorHandler from "@/middlewares/errorHandler";
+import { CorsHandler } from "@/middlewares/corsHandler";
+import { ErrorHandler } from "@/middlewares/errorHandler";
 import AsyncHandler from "@/utils/asyncHandler";
 import { NotFoundError } from "@/utils/errors";
 import { ConsoleLogger } from "@/utils/logger";
@@ -15,7 +15,7 @@ const app = express();
 
 const PORT = config.env.PORT;
 
-app.use(cors());
+app.use(CorsHandler);
 app.use(
   helmet({
     crossOriginEmbedderPolicy: false,
