@@ -19,7 +19,7 @@ app.use(CorsHandler);
 app.use(
   helmet({
     crossOriginEmbedderPolicy: false,
-    crossOriginResourcePolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
 app.disable("x-powered-by");

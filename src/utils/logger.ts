@@ -1,13 +1,21 @@
 import { Request } from "express";
-import winston from "winston";
 import { randomBytes } from "crypto";
+import path from "path";
+import winston from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
 
 import config from "@/config";
-import { HTTPError } from "@/utils/errors";
+import { HTTPError, ServerError } from "@/utils/errors";
 
 const { combine, timestamp, json, printf, colorize } = winston.format;
 const timestampFormat = "MMM-DD-YYYY HH:mm:ss";
+
+const getFilePath = (callingModule: NodeModule) => {
+  const parts = callingModule.filename.split(path.sep);
+  const file = parts.pop();
+  const folder = parts[parts.length - 1];
+  return `${folder}/${file}`;
+};
 
 const SENSITIVE_KEYS = new Set(["password"]);
 
@@ -15,7 +23,7 @@ function generateLogId(): string {
   return randomBytes(16).toString("hex");
 }
 
-export default function Logger() {
+export default function Logger(callingModule: any) {
   return winston.createLogger({
     format: combine(
       timestamp({ format: timestampFormat }),
@@ -27,6 +35,7 @@ export default function Logger() {
           timestamp,
           environment: config.env.NODE_ENV,
           logData: message,
+          file: getFilePath(callingModule),
         };
 
         return JSON.stringify(logEntry, null, 2);
@@ -68,9 +77,13 @@ export function FormatErrorResponse(req: Request, error: HTTPError) {
     query: FormatField(req.query),
     body: FormatField(req.body),
   };
+
   const response = {
     status: `[${error.status}] ${error.error}`,
     error: error.message,
+    ...(error instanceof ServerError && error.cause
+      ? { cause: error.cause.stack?.split("\n").map((line) => line.trim()) }
+      : {}),
   };
 
   return {

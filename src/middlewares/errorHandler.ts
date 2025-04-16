@@ -12,9 +12,12 @@ export function ErrorHandler(
   const statusCode = err.status;
 
   const errorResposne = FormatErrorResponse(req, err);
-  const logger = Logger();
 
-  logger.error(errorResposne);
+  if (err.logger) err.logger.error(errorResposne);
+  else {
+    const logger = Logger(module);
+    logger.error(errorResposne);
+  }
 
   res.status(statusCode).json({
     success: err.success,

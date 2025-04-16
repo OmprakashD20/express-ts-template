@@ -27,9 +27,11 @@ export default function AsyncHandler<
       const { statusCode, ...data } = await fn(req, res);
 
       res.status(statusCode).json({ success: true, data });
-    } catch (error: any) {
+    } catch (error: unknown) {
       ConsoleLogger.error(error);
       if (error instanceof HTTPError) next(error);
+      else if (error instanceof Error)
+        next(new ServerError(error.message, error));
       else next(new ServerError());
     }
   };
